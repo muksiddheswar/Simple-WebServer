@@ -1,6 +1,9 @@
-﻿namespace ConsoleWebServer
+﻿using System;
+using Bare.WebServer;
+
+namespace ConsoleWebServer
 {
-    internal class Program
+    class Program
     {
         static void Main(string[] args)
         {
