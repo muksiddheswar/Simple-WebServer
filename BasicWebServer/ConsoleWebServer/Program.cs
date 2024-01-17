@@ -8,6 +8,8 @@ namespace ConsoleWebServer
         static void Main(string[] args)
         {
             Console.WriteLine("Hello, World!");
+            Server.Start();
+            Console.ReadLine();
         }
     }
 }
