@@ -90,6 +90,7 @@ namespace Bare.WebServer
 
             // Release the semaphore so that another listener can be immediately started up.
             sem.Release();
+            Log(context.Request);
 
             // We have a connection, do something...
             string response = "Hello Browser!";
@@ -97,6 +98,14 @@ namespace Bare.WebServer
             context.Response.ContentLength64 = encoded.Length;
             context.Response.OutputStream.Write(encoded, 0, encoded.Length);
             context.Response.OutputStream.Close();
+        }
+
+        // Log requests.
+        public static void Log(HttpListenerRequest request)
+        {
+            //Console.WriteLine(request.RemoteEndPoint + " " + request.HttpMethod + " /" + request.Url.AbsoluteUri.RightOf('/', 3));
+            Console.WriteLine(request.RemoteEndPoint + " " + request.HttpMethod + " /" + request.Url.AbsoluteUri);
+
         }
 
 
