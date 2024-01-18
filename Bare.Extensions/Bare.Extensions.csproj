@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+	<ProjectGuid>{946D1575-E010-4385-A75E-5ACEA9FE8DFB}</ProjectGuid>
+	<RootNamespace>Bare.Extensions</RootNamespace>
+    <AssemblyName>Bare.Extensions</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>

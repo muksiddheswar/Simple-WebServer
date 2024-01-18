@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
+
 
 namespace Bare.WebServer
 {
@@ -47,8 +48,9 @@ namespace Bare.WebServer
         private static HttpListener InitializeListener(List<IPAddress> localhostIPs)
         {
             HttpListener listener = new HttpListener();
-            listener.Prefixes.Add("http://localhost/");
+            //listener.Prefixes.Add("http://localhost/");
             //listener.Prefixes.Add("http://localhost:80/");
+            listener.Prefixes.Add("http://localhost:4444/");
 
             // Listen to IP address as well.
             localhostIPs.ForEach(ip =>
@@ -93,11 +95,17 @@ namespace Bare.WebServer
             Log(context.Request);
 
             // We have a connection, do something...
-            string response = "Hello Browser!";
-            byte[] encoded = Encoding.UTF8.GetBytes(response);
-            context.Response.ContentLength64 = encoded.Length;
-            context.Response.OutputStream.Write(encoded, 0, encoded.Length);
-            context.Response.OutputStream.Close();
+            //string response = "Hello Browser!";
+            //byte[] encoded = Encoding.UTF8.GetBytes(response);
+            //context.Response.ContentLength64 = encoded.Length;
+            //context.Response.OutputStream.Write(encoded, 0, encoded.Length);
+            //context.Response.OutputStream.Close();
+
+            HttpListenerRequest request = context.Request;
+            string path = request.RawUrl.LeftOfChar("?"); // Only the path, not any of the parameters
+            string verb = request.HttpMethod; // get, post, delete, etc.
+            string parms = request.RawUrl.RightOf("?"); // Params on the URL itself follow the URL and are separated by a ?
+            Dictionary<string, string> kvParams = GetKeyValues(parms); // Extract into key-value entries.
         }
 
         // Log requests.

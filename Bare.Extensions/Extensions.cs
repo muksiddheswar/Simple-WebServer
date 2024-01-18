@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Bare.Extensions
 {
-    public static class ExtensionMethods
+    public static class Extensions
     {
         /// <summary>
         /// Left of the first occurance of c
