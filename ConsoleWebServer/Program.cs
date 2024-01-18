@@ -1,5 +1,7 @@
 ﻿using System;
 using Bare.WebServer;
+using Bare.Extensions;
+using System.ComponentModel.DataAnnotations;
 
 namespace ConsoleWebServer
 {
@@ -10,6 +12,7 @@ namespace ConsoleWebServer
             Console.WriteLine("Hello, World!");
             Server.Start();
             Console.ReadLine();
+            
         }
     }
 }

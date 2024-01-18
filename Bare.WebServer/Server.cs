@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Bare.Extensions;
 
 
 namespace Bare.WebServer
@@ -13,7 +14,7 @@ namespace Bare.WebServer
     public static class Server
     {
         public static int maxSimultaneousConnections = 20;
-        private static Semaphore sem = new Semaphore(maxSimultaneousConnections, maxSimultaneousConnections);
+        private static Semaphore sem = new(maxSimultaneousConnections, maxSimultaneousConnections);
 
 
         // Starts the web server.
@@ -105,7 +106,7 @@ namespace Bare.WebServer
             string path = request.RawUrl.LeftOfChar("?"); // Only the path, not any of the parameters
             string verb = request.HttpMethod; // get, post, delete, etc.
             string parms = request.RawUrl.RightOf("?"); // Params on the URL itself follow the URL and are separated by a ?
-            Dictionary<string, string> kvParams = GetKeyValues(parms); // Extract into key-value entries.
+            //Dictionary<string, string> kvParams = GetKeyValues(parms); // Extract into key-value entries.
         }
 
         // Log requests.
