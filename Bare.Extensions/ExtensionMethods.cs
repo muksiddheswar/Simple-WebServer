@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Bare.Extensions
 {
-    internal class ExtensionMethods
+    public static class ExtensionMethods
     {
         /// <summary>
         /// Left of the first occurance of c
@@ -14,7 +14,7 @@ namespace Bare.Extensions
         /// <param name="src">The source string.</param>
         /// <param name="c">Return everything to the left of this character.</param>
         /// <returns>String to the left of c, or the entire string.</returns>
-        public static string LeftOfChar(string src, char c)
+        public static string LeftOfChar(this string src, char c)
         {
             string ret = src;
 
@@ -35,7 +35,7 @@ namespace Bare.Extensions
         /// <param name="c">Return everything to the left n'th occurance of this character.</param>
         /// <param name="n">The occurance.</param>
         /// <returns>String to the left of c, or the entire string if not found or n is 0.</returns>
-        public static string LeftOfChar(string src, char c, int n)
+        public static string LeftOfChar(this string src, char c, int n)
         {
             string ret = src;
             int index = -1;
@@ -66,7 +66,7 @@ namespace Bare.Extensions
         /// <param name="src">The source string.</param>
         /// <param name="c">The search char.</param>
         /// <returns>Returns everything to the right of c, or an empty string if c is not found.</returns>
-        public static string RightOfChar(string src, char c)
+        public static string RightOfChar(this string src, char c)
         {
             string ret = String.Empty;
             int index = src.IndexOf(c);
@@ -86,7 +86,7 @@ namespace Bare.Extensions
         /// <param name="src"></param>
         /// <param name="substr"></param>
         /// <returns></returns>
-        public static string RightOfChar(string src, string substr)
+        public static string RightOfChar(this string src, string substr)
         {
             string ret = String.Empty;
             int index = src.IndexOf(substr);
@@ -97,6 +97,14 @@ namespace Bare.Extensions
             }
 
             return ret;
+        }
+
+        /// <summary>
+		/// Returns true if the object is null.
+		/// </summary>
+        public static bool IfNull<T>(this T obj)
+        {
+            return obj == null;
         }
     }
 }

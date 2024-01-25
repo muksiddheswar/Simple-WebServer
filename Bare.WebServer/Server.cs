@@ -103,10 +103,10 @@ namespace Bare.WebServer
             //context.Response.OutputStream.Close();
 
             HttpListenerRequest request = context.Request;
-            string path = request.RawUrl.LeftOfChar("?"); // Only the path, not any of the parameters
+            string path = request.RawUrl.LeftOfChar('?'); // Only the path, not any of the parameters
             string verb = request.HttpMethod; // get, post, delete, etc.
-            string parms = request.RawUrl.RightOf("?"); // Params on the URL itself follow the URL and are separated by a ?
-            //Dictionary<string, string> kvParams = GetKeyValues(parms); // Extract into key-value entries.
+            string parms = request.RawUrl.RightOfChar('?'); // Params on the URL itself follow the URL and are separated by a ?
+            Dictionary<string, string> kvParams = GetKeyValues(parms); // Extract into key-value entries.
         }
 
         // Log requests.
@@ -116,6 +116,20 @@ namespace Bare.WebServer
             Console.WriteLine(request.RemoteEndPoint + " " + request.HttpMethod + " /" + request.Url.AbsoluteUri);
 
         }
+
+
+        /// <summary>
+        /// Separate out key-value pairs, delimited by & and into individual key-value instances, separated by =
+        /// Ex input: username=abc&password=123
+        /// </summary>
+        //private static Dictionary<string, object> GetKeyValues(string data, Dictionary<string, object> kv = null)
+        //{
+            
+        //    kv.IfNull(() => kv = new Dictionary<string, object>());
+        //    data.If(d => d.Length > 0, (d) => d.Split('&').ForEach(keyValue => kv[keyValue.LeftOf('=')] = System.Uri.UnescapeDataString(keyValue.RightOf('='))));
+
+        //    return kv;
+        //}
 
 
     }
