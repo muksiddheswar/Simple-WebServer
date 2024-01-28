@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -11,15 +12,38 @@ using Bare.Extensions;
 
 namespace Bare.WebServer
 {
-    public static class Server
+
+
+    public class Server
     {
+        public enum ServerError
+        {
+            OK,
+            ExpiredSession,
+            NotAuthorized,
+            FileNotFound,
+            PageNotFound,
+            ServerError,
+            UnknownType,
+            ValidationError,
+            AjaxError,
+        }
+
+        public Func<Session, string, string, string> PostProcess { get; set; }
+        public string ValidationTokenName { get; set; }
+
+        protected string protectedIP = String.Empty;
+        protected string validationTokenScript = "@AntiForgeryToken@";
+        protected string publicIP = null;
+
+
         public static int maxSimultaneousConnections = 20;
         private static Semaphore sem = new(maxSimultaneousConnections, maxSimultaneousConnections);
-
+        private static Router router = new Router();
 
         // Starts the web server.
         //public void Start(string websitePath, int port = 80, bool acquirePublicIP = false)
-        public static void Start()
+        public static void Start(string websitePath)
         {
             //OnError.IfNull(() => Console.WriteLine("Warning - the onError callback has not been initialized by the application."));
 
@@ -29,7 +53,7 @@ namespace Bare.WebServer
             //    Console.WriteLine("public IP: " + publicIP);
             //}
 
-            //router.WebsitePath = websitePath;
+            router.WebsitePath = websitePath;
             List<IPAddress> localHostIPs = GetLocalHostIPs();
             //HttpListener listener = InitializeListener(localHostIPs, port);
             HttpListener listener = InitializeListener(localHostIPs);
@@ -106,7 +130,8 @@ namespace Bare.WebServer
             string path = request.RawUrl.LeftOfChar('?'); // Only the path, not any of the parameters
             string verb = request.HttpMethod; // get, post, delete, etc.
             string parms = request.RawUrl.RightOfChar('?'); // Params on the URL itself follow the URL and are separated by a ?
-            Dictionary<string, string> kvParams = GetKeyValues(parms); // Extract into key-value entries.
+            Dictionary<string, object> kvParams = GetKeyValues(parms); // Extract into key-value entries.
+            router.Route(verb, path, kvParams);
         }
 
         // Log requests.
@@ -122,15 +147,32 @@ namespace Bare.WebServer
         /// Separate out key-value pairs, delimited by & and into individual key-value instances, separated by =
         /// Ex input: username=abc&password=123
         /// </summary>
-        //private static Dictionary<string, object> GetKeyValues(string data, Dictionary<string, object> kv = null)
-        //{
-            
-        //    kv.IfNull(() => kv = new Dictionary<string, object>());
-        //    data.If(d => d.Length > 0, (d) => d.Split('&').ForEach(keyValue => kv[keyValue.LeftOf('=')] = System.Uri.UnescapeDataString(keyValue.RightOf('='))));
+        private static Dictionary<string, object> GetKeyValues(string data, Dictionary<string, object> kv = null)
+        {
+            kv.IfNull(() => kv = new Dictionary<string, object>());
+            data.If(d => d.Length > 0, (d) => d.Split('&').ForEach(keyValue => kv[keyValue.LeftOfChar('=')] = System.Uri.UnescapeDataString(keyValue.RightOfChar('='))));
 
-        //    return kv;
-        //}
+            return kv;
+        }
 
+
+        /// <summary>
+        /// Callable by the application for default handling, therefore must be public.
+        /// </summary>
+        // TODO: Implement this as interface with a base class so the app can call the base class default behavior.
+        public string DefaultPostProcess(Session session, string fileName, string html)
+        {
+            string ret = html.Replace(validationTokenScript, "<input name=" + ValidationTokenName.SingleQuote() +
+                " type='hidden' value=" + session[ValidationTokenName].ToString().SingleQuote() +
+                " id='__csrf__'/>");
+
+            // For when the CSRF is in a knockout model or other JSON that is being posted back to the server.
+            ret = ret.Replace("@CSRF@", session[ValidationTokenName].ToString().SingleQuote());
+
+            ret = ret.Replace("@CSRFValue@", session[ValidationTokenName].ToString());
+
+            return ret;
+        }
 
     }
 }

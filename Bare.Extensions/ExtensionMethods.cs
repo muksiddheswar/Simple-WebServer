@@ -99,12 +99,140 @@ namespace Bare.Extensions
             return ret;
         }
 
+
+        /// <summary>
+        /// Returns everything to the left of the righmost char c.
+        /// </summary>
+        /// <param name="src">The source string.</param>
+        /// <param name="c">The search char.</param>
+        /// <returns>Everything to the left of the rightmost char c, or the entire string.</returns>
+        public static string LeftOfRightmostOf(this string src, char c)
+        {
+            string ret = src;
+            int idx = src.LastIndexOf(c);
+
+            if (idx != -1)
+            {
+                ret = src.Substring(0, idx);
+            }
+
+            return ret;
+        }
+
+        /// <summary>
+        /// Returns everything to the right of the rightmost char c.
+        /// </summary>
+        /// <param name="src">The source string.</param>
+        /// <param name="c">The seach char.</param>
+        /// <returns>Returns everything to the right of the rightmost search char, or an empty string.</returns>
+        public static string RightOfRightmostOf(this string src, char c)
+        {
+            string ret = String.Empty;
+            int idx = src.LastIndexOf(c);
+
+            if (idx != -1)
+            {
+                ret = src.Substring(idx + 1);
+            }
+
+            return ret;
+        }
+
+
+
+        /// <summary>
+		/// Returns a new string surrounded by single quotes.
+		/// </summary>
+		public static string SingleQuote(this String src)
+        {
+            return "'" + src + "'";
+        }
+
+
+
+
         /// <summary>
 		/// Returns true if the object is null.
 		/// </summary>
         public static bool IfNull<T>(this T obj)
         {
             return obj == null;
+        }
+
+        /// <summary>
+        /// If the object is null, performs the action and returns true.
+        /// </summary>
+        public static bool IfNull<T>(this T obj, Action action)
+        {
+            bool ret = obj == null;
+
+            if (ret) { action(); }
+
+            return ret;
+        }
+
+        /// <summary>
+        /// Returns true if the object is not null.
+        /// </summary>
+        public static bool IfNotNull<T>(this T obj)
+        {
+            return obj != null;
+        }
+
+        /// <summary>
+        /// If the object is not null, performs the action and returns true.
+        /// </summary>
+        public static bool IfNotNull<T>(this T obj, Action<T> action)
+        {
+            bool ret = obj != null;
+
+            if (ret) { action(obj); }
+
+            return ret;
+        }
+
+
+        /// <summary>
+        /// Return the result of the func if 'T is not null, passing 'T to func.
+        /// </summary>
+        public static R IfNotNullReturn<T, R>(this T obj, Func<T, R> func)
+        {
+            if (obj != null)
+            {
+                return func(obj);
+            }
+            else
+            {
+                return default(R);
+            }
+        }
+
+        public static bool If<T>(this T v, Func<T, bool> predicate, Action<T> action)
+        {
+            bool ret = predicate(v);
+
+            if (ret)
+            {
+                action(v);
+            }
+
+            return ret;
+        }
+
+
+
+
+        /// <summary>
+        /// Implements a ForEach for generic enumerators.
+        /// </summary>
+        public static void ForEach<T>(this IEnumerable<T> collection, Action<T> action)
+        {
+            foreach (var item in collection)
+            {
+                action(item);
+
+
+            }
         }
     }
 }
