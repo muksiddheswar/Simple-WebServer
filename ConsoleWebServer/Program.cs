@@ -8,16 +8,19 @@ namespace ConsoleWebServer
 {
     class Program
     {
+        public static Server server;
+
         static void Main(string[] args)
         {
             string websitePath = GetWebsitePath();
+            server = new Server();
             Console.WriteLine("Hello, World!");
 
             //server.AddRoute(new Route() { Verb = Router.POST, Path = "/demo/redirect", Handler = new AuthenticatedExpirableRouteHandler(server, RedirectMe) });
             //server.AddRoute(new Route() { Verb = Router.PUT, Path = "/demo/ajax", Handler = new AnonymousRouteHandler(server, AjaxResponder) });
             //server.AddRoute(new Route() { Verb = Router.GET, Path = "/demo/ajax", Handler = new AnonymousRouteHandler(server, AjaxGetResponder) });
 
-            Server.Start(websitePath);
+            server.Start(websitePath);
             Console.ReadLine();
             
         }

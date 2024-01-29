@@ -72,7 +72,7 @@ namespace Bare.WebServer
         protected List<Route> routes;
         protected Server server;
 
-        public Router()
+        public Router(Server serve)
         {
             extFolderMap = new Dictionary<string, ExtensionInfo>()
             {
@@ -87,6 +87,72 @@ namespace Bare.WebServer
               {"", new ExtensionInfo() {Loader=PageLoader, ContentType="text/html"}},
             };
         }
+
+
+        public ResponsePacket Route(Session session, string verb, string path, Dictionary<string, object> kvParams)
+        {
+            string ext = path.RightOfRightmostOf('.');
+            ExtensionInfo extInfo;
+            ResponsePacket ret = null;
+            verb = verb.ToLower();
+            path = path.ToLower();
+
+            if (extFolderMap.TryGetValue(ext, out extInfo))
+            {
+                string wpath = path.Substring(1).Replace('/', '\\');            // Strip off leading '/' and reformat as with windows path separator.
+                string fullPath = Path.Combine(WebsitePath, wpath);
+
+                Route routeHandler = routes.SingleOrDefault(r => verb == r.Verb.ToLower() && path == r.Path.ToLower());
+
+                if (routeHandler != null)
+                {
+                    // Application has a handler for this route.
+                    ResponsePacket handlerResponse = null;
+
+                    // If a handler exists:
+                    routeHandler.Handler.IfNotNull((h) => handlerResponse = h.Handle(session, kvParams));
+
+                    // If multiple handlers exist, see which one, if any, is willing to handle the request.
+                    // We stop after the first handler.
+                    // This behavior is useful for web services or other types of routes where the data determines the route, not the URL.
+                    if (routeHandler.Handlers.Count > 0)
+                    {
+                        foreach (RouteHandler h in routeHandler.Handlers)
+                        {
+                            if (h.CanHandle(session, kvParams))
+                            {
+                                handlerResponse = h.Handle(session, kvParams);
+                                break;
+                            }
+                        }
+                    }
+
+                    if (handlerResponse == null)
+                    {
+                        // Respond with default content loader.
+                        ret = extInfo.Loader(routeHandler, session, kvParams, fullPath, ext, extInfo);
+                    }
+                    else
+                    {
+                        // Respond with redirect.
+                        ret = handlerResponse;
+                    }
+                }
+                else
+                {
+                    // Attempt default behavior
+                    ret = extInfo.Loader(null, session, kvParams, fullPath, ext, extInfo);
+                }
+            }
+            else
+            {
+                ret = new ResponsePacket() { Error = Server.ServerError.UnknownType };
+            }
+
+            return ret;
+        }
+
+
 
         /// <summary>
         /// Read in an image file and returns a ResponsePacket with the raw data.
@@ -163,11 +229,6 @@ namespace Bare.WebServer
             }
 
             return ret;
-        }
-
-        private ResponsePacket Route(Session session, string gET, string v, object value)
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>

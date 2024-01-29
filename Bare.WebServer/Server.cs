@@ -28,8 +28,11 @@ namespace Bare.WebServer
             ValidationError,
             AjaxError,
         }
-
         public Func<Session, string, string, string> PostProcess { get; set; }
+        public Func<ServerError, string> OnError { get; set; }
+        public Action<Session, HttpListenerContext> OnRequest;
+        public int MaxSimultaneousConnections { get; set; }
+        public int ExpirationTimeSeconds { get; set; }
         public string ValidationTokenName { get; set; }
 
         protected string protectedIP = String.Empty;
@@ -37,21 +40,28 @@ namespace Bare.WebServer
         protected string publicIP = null;
 
 
-        public static int maxSimultaneousConnections = 20;
-        private static Semaphore sem = new(maxSimultaneousConnections, maxSimultaneousConnections);
-        private static Router router = new Router();
+        protected Semaphore sem;
+        protected Router router;
+        protected SessionManager sessionManager;
 
-        // Starts the web server.
-        //public void Start(string websitePath, int port = 80, bool acquirePublicIP = false)
-        public static void Start(string websitePath)
+        public Server()
         {
-            //OnError.IfNull(() => Console.WriteLine("Warning - the onError callback has not been initialized by the application."));
+            MaxSimultaneousConnections = 20;            // TODO: This needs to be externally settable before initializing the semaphore.
+            ExpirationTimeSeconds = 60;                 // default expires in 1 minute.
+            ValidationTokenName = "__CSRFToken__";
 
-            //if (acquirePublicIP)
-            //{
-            //    publicIP = GetExternalIP();
-            //    Console.WriteLine("public IP: " + publicIP);
-            //}
+
+            sem = new Semaphore(MaxSimultaneousConnections, MaxSimultaneousConnections);
+            router = new Router(this);
+            sessionManager = new SessionManager(this);
+            PostProcess = DefaultPostProcess;
+        }
+
+        /// <summary>
+		/// Starts the web server.
+		/// </summary>
+        public void Start(string websitePath)
+        {
 
             router.WebsitePath = websitePath;
             List<IPAddress> localHostIPs = GetLocalHostIPs();
@@ -92,7 +102,7 @@ namespace Bare.WebServer
         }
 
         // Begin listening to connections on a separate worker thread.
-        private static void Start(HttpListener listener)
+        private void Start(HttpListener listener)
         {
             listener.Start();
             Task.Run(() => RunServer(listener));
@@ -100,7 +110,7 @@ namespace Bare.WebServer
 
         /// Start awaiting for connections, up to the "maxSimultaneousConnections" value.
         /// This code runs in a separate thread.
-        private static void RunServer(HttpListener listener)
+        private void RunServer(HttpListener listener)
         {
             while (true)
             {
@@ -110,10 +120,11 @@ namespace Bare.WebServer
         }
 
         // Await connections.
-        private static async void StartConnectionListener(HttpListener listener)
+        private async void StartConnectionListener(HttpListener listener)
         {
             // Wait for a connection. Return to caller while we wait.
             HttpListenerContext context = await listener.GetContextAsync();
+            Session session = sessionManager.GetSession(context.Request.RemoteEndPoint);
 
             // Release the semaphore so that another listener can be immediately started up.
             sem.Release();
@@ -131,8 +142,19 @@ namespace Bare.WebServer
             string verb = request.HttpMethod; // get, post, delete, etc.
             string parms = request.RawUrl.RightOfChar('?'); // Params on the URL itself follow the URL and are separated by a ?
             Dictionary<string, object> kvParams = GetKeyValues(parms); // Extract into key-value entries.
-            router.Route(verb, path, kvParams);
+            router.Route(session, verb, path, kvParams);
         }
+
+        private void Respond(HttpListenerRequest request, HttpListenerResponse response, ResponsePacket resp)
+        {
+            response.ContentType = resp.ContentType;
+            response.ContentLength64 = resp.Data.Length;
+            response.OutputStream.Write(resp.Data, 0, resp.Data.Length);
+            response.ContentEncoding = resp.Encoding;
+            response.StatusCode = (int)HttpStatusCode.OK;
+            response.OutputStream.Close();
+        }
+
 
         // Log requests.
         public static void Log(HttpListenerRequest request)

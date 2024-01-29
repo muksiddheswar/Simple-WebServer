@@ -12,4 +12,8 @@
 	  <ProjectReference Include="..\Bare.WebServer\Bare.WebServer.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Website\CSS\" />
+	</ItemGroup>
+
 </Project>
