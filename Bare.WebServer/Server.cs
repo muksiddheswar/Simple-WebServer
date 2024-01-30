@@ -119,30 +119,71 @@ namespace Bare.WebServer
             }
         }
 
-        // Await connections.
-        private async void StartConnectionListener(HttpListener listener)
+        /// <summary>
+		/// Await connections.
+		/// </summary>
+		private async void StartConnectionListener(HttpListener listener)
         {
-            // Wait for a connection. Return to caller while we wait.
+            ResponsePacket resp = null;
+
+            // Wait for a connection.  Return to caller while we wait.
             HttpListenerContext context = await listener.GetContextAsync();
             Session session = sessionManager.GetSession(context.Request.RemoteEndPoint);
+            OnRequest.IfNotNull(r => r(session, context));
 
             // Release the semaphore so that another listener can be immediately started up.
             sem.Release();
             Log(context.Request);
 
-            // We have a connection, do something...
-            //string response = "Hello Browser!";
-            //byte[] encoded = Encoding.UTF8.GetBytes(response);
-            //context.Response.ContentLength64 = encoded.Length;
-            //context.Response.OutputStream.Write(encoded, 0, encoded.Length);
-            //context.Response.OutputStream.Close();
-
             HttpListenerRequest request = context.Request;
-            string path = request.RawUrl.LeftOfChar('?'); // Only the path, not any of the parameters
-            string verb = request.HttpMethod; // get, post, delete, etc.
-            string parms = request.RawUrl.RightOfChar('?'); // Params on the URL itself follow the URL and are separated by a ?
-            Dictionary<string, object> kvParams = GetKeyValues(parms); // Extract into key-value entries.
-            router.Route(session, verb, path, kvParams);
+
+            try
+            {
+                string path = request.RawUrl.LeftOfChar('?');           // Only the path, not any of the parameters
+                string verb = request.HttpMethod;                   // get, post, delete, etc.
+                string parms = request.RawUrl.RightOfChar('?');         // Params on the URL itself follow the URL and are separated by a ?
+                Dictionary<string, object> kvParams = GetKeyValues(parms);  // Extract into key-value entries.
+                string data = new StreamReader(context.Request.InputStream, context.Request.ContentEncoding).ReadToEnd();
+                GetKeyValues(data, kvParams);
+                Log(kvParams);
+
+                //if (!VerifyCsrf(session, verb, kvParams))
+                //{
+                //    Console.WriteLine("CSRF did not match.  Terminating connection.");
+                //    context.Response.OutputStream.Close();
+                //}
+                //else
+                {
+                    resp = router.Route(session, verb, path, kvParams);
+
+                    // Update session last connection after getting the response, as the router itself validates session expiration only on pages requiring authentication.
+                    session.UpdateLastConnectionTime();
+
+                    if (resp.Error != ServerError.OK)
+                    {
+                        resp.Redirect = OnError(resp.Error);
+                    }
+
+                    // TODO: Nested exception: is this best?
+
+                    try
+                    {
+                        Respond(request, context.Response, resp);
+                    }
+                    catch (Exception reallyBadException)
+                    {
+                        // The response failed!
+                        // TODO: We need to put in some decent logging!
+                        Console.WriteLine(reallyBadException.Message);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                resp = new ResponsePacket() { Redirect = OnError(ServerError.ServerError) };
+            }
         }
 
         private void Respond(HttpListenerRequest request, HttpListenerResponse response, ResponsePacket resp)
@@ -157,11 +198,19 @@ namespace Bare.WebServer
 
 
         // Log requests.
-        public static void Log(HttpListenerRequest request)
+        public void Log(HttpListenerRequest request)
         {
             //Console.WriteLine(request.RemoteEndPoint + " " + request.HttpMethod + " /" + request.Url.AbsoluteUri.RightOf('/', 3));
             Console.WriteLine(request.RemoteEndPoint + " " + request.HttpMethod + " /" + request.Url.AbsoluteUri);
 
+        }
+
+        /// <summary>
+        /// Log parameters.
+        /// </summary>
+        private void Log(Dictionary<string, object> kv)
+        {
+            kv.ForEach(kvp => Console.WriteLine(kvp.Key + " : " + Uri.UnescapeDataString(kvp.Value.ToString())));
         }
 
 

@@ -29,7 +29,7 @@ namespace ConsoleWebServer
         {
             // Path of our exe.
             string websitePath = Assembly.GetExecutingAssembly().Location;
-            websitePath = websitePath.LeftOfRightmostOf('\\').LeftOfRightmostOf('\\').LeftOfRightmostOf('\\') + "\\Website";
+            websitePath = websitePath.LeftOfRightmostOf('\\').LeftOfRightmostOf('\\').LeftOfRightmostOf('\\').LeftOfRightmostOf('\\') + "\\Website";
 
             return websitePath;
         }

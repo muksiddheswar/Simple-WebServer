@@ -72,19 +72,22 @@ namespace Bare.WebServer
         protected List<Route> routes;
         protected Server server;
 
-        public Router(Server serve)
+        public Router(Server server)
         {
+            this.server = server;
+            routes = new List<WebServer.Route>();
+
             extFolderMap = new Dictionary<string, ExtensionInfo>()
             {
-              {"ico", new ExtensionInfo() {Loader=ImageLoader, ContentType="image/ico"}},
-              {"png", new ExtensionInfo() {Loader=ImageLoader, ContentType="image/png"}},
-              {"jpg", new ExtensionInfo() {Loader=ImageLoader, ContentType="image/jpg"}},
-              {"gif", new ExtensionInfo() {Loader=ImageLoader, ContentType="image/gif"}},
-              {"bmp", new ExtensionInfo() {Loader=ImageLoader, ContentType="image/bmp"}},
-              {"html", new ExtensionInfo() {Loader=PageLoader, ContentType="text/html"}},
-              {"css", new ExtensionInfo() {Loader=FileLoader, ContentType="text/css"}},
-              {"js", new ExtensionInfo() {Loader=FileLoader, ContentType="text/javascript"}},
-              {"", new ExtensionInfo() {Loader=PageLoader, ContentType="text/html"}},
+                {"ico", new ExtensionInfo() {Loader=ImageLoader, ContentType="image/ico"}},
+                {"png", new ExtensionInfo() {Loader=ImageLoader, ContentType="image/png"}},
+                {"jpg", new ExtensionInfo() {Loader=ImageLoader, ContentType="image/jpg"}},
+                {"gif", new ExtensionInfo() {Loader=ImageLoader, ContentType="image/gif"}},
+                {"bmp", new ExtensionInfo() {Loader=ImageLoader, ContentType="image/bmp"}},
+                {"html", new ExtensionInfo() {Loader=PageLoader, ContentType="text/html"}},
+                {"css", new ExtensionInfo() {Loader=FileLoader, ContentType="text/css"}},
+                {"js", new ExtensionInfo() {Loader=FileLoader, ContentType="text/javascript"}},
+                {"", new ExtensionInfo() {Loader=PageLoader, ContentType="text/html"}},
             };
         }
 
