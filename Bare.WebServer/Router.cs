@@ -1,12 +1,6 @@
 ﻿using Bare.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
-using static System.Collections.Specialized.BitVector32;
 
 namespace Bare.WebServer
 {
@@ -96,7 +90,7 @@ namespace Bare.WebServer
         {
             string ext = path.RightOfRightmostOf('.');
             ExtensionInfo extInfo;
-            ResponsePacket ret = null;
+            ResponsePacket? ret = null;
             verb = verb.ToLower();
             path = path.ToLower();
 
@@ -110,7 +104,7 @@ namespace Bare.WebServer
                 if (routeHandler != null)
                 {
                     // Application has a handler for this route.
-                    ResponsePacket handlerResponse = null;
+                    ResponsePacket? handlerResponse = null;
 
                     // If a handler exists:
                     routeHandler.Handler.IfNotNull((h) => handlerResponse = h.Handle(session, kvParams));

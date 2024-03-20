@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Bare.Extensions
+﻿namespace Bare.Extensions
 {
     public static class ExtensionMethods
     {

@@ -1,12 +1,4 @@
 ﻿using Bare.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Collections.Specialized.BitVector32;
-
-using Bare.Extensions;
 
 namespace Bare.WebServer
 {
@@ -38,7 +30,7 @@ namespace Bare.WebServer
 
         protected ResponsePacket InvokeHandler(Session session, Dictionary<string, object> parms)
         {
-            ResponsePacket ret = null;
+            ResponsePacket? ret = null;
             handler.IfNotNull((h) => ret = h(session, parms));
 
             return ret;

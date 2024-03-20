@@ -1,7 +1,5 @@
-﻿using System;
-using Bare.WebServer;
+﻿using Bare.WebServer;
 using Bare.Extensions;
-using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
 namespace ConsoleWebServer
