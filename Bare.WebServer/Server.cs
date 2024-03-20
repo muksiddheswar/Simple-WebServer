@@ -94,7 +94,8 @@ namespace Bare.WebServer
                 //listener.Prefixes.Add("http://" + ip.ToString() + "/");
 
                 // For testing on a different port:
-                listener.Prefixes.Add("https://" + ip.ToString() + ":8443/");
+                //listener.Prefixes.Add("https://" + ip.ToString() + ":8443/");
+                listener.Prefixes.Add("http://" + ip.ToString() + "/");
 
             });
 
@@ -114,7 +115,7 @@ namespace Bare.WebServer
         {
             while (true)
             {
-                bool v = sem.WaitOne();
+                sem.WaitOne();
                 StartConnectionListener(listener);
             }
         }
@@ -139,9 +140,9 @@ namespace Bare.WebServer
 
             try
             {
-                string path = request.RawUrl.LeftOfChar('?');           // Only the path, not any of the parameters
-                string verb = request.HttpMethod;                   // get, post, delete, etc.
-                string parms = request.RawUrl.RightOfChar('?');         // Params on the URL itself follow the URL and are separated by a ?
+                string path = request.RawUrl.LeftOfChar('?');               // Only the path, not any of the parameters
+                string verb = request.HttpMethod;                           // get, post, delete, etc.
+                string parms = request.RawUrl.RightOfChar('?');             // Params on the URL itself follow the URL and are separated by a ?
                 Dictionary<string, object> kvParams = GetKeyValues(parms);  // Extract into key-value entries.
                 string data = new StreamReader(context.Request.InputStream, context.Request.ContentEncoding).ReadToEnd();
                 GetKeyValues(data, kvParams);

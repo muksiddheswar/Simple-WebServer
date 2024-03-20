@@ -12,9 +12,11 @@ namespace ConsoleWebServer
 
         static void Main(string[] args)
         {
-            string websitePath = GetWebsitePath();
-            server = new Server();
             Console.WriteLine("Hello, World!");
+            string websitePath = GetWebsitePath();
+            Console.WriteLine("lOCATION: " + websitePath);
+
+            server = new Server();
 
             //server.AddRoute(new Route() { Verb = Router.POST, Path = "/demo/redirect", Handler = new AuthenticatedExpirableRouteHandler(server, RedirectMe) });
             //server.AddRoute(new Route() { Verb = Router.PUT, Path = "/demo/ajax", Handler = new AnonymousRouteHandler(server, AjaxResponder) });
@@ -22,7 +24,7 @@ namespace ConsoleWebServer
 
             server.Start(websitePath);
             Console.ReadLine();
-            
+
         }
 
         public static string GetWebsitePath()
