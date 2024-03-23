@@ -31,7 +31,7 @@ namespace Bare.WebServer
 
         protected string protectedIP = String.Empty;
         protected string validationTokenScript = "@AntiForgeryToken@";
-        protected string publicIP = null;
+        protected string? publicIP = null;
 
 
         protected Semaphore sem;
@@ -119,7 +119,7 @@ namespace Bare.WebServer
 		/// </summary>
 		private async void StartConnectionListener(HttpListener listener)
         {
-            ResponsePacket resp = null;
+            ResponsePacket? resp = null;
 
             // Wait for a connection.  Return to caller while we wait.
             HttpListenerContext context = await listener.GetContextAsync();
@@ -213,7 +213,7 @@ namespace Bare.WebServer
         /// Separate out key-value pairs, delimited by & and into individual key-value instances, separated by =
         /// Ex input: username=abc&password=123
         /// </summary>
-        private static Dictionary<string, object> GetKeyValues(string data, Dictionary<string, object> kv = null)
+        private static Dictionary<string, object> GetKeyValues(string data, Dictionary<string, object>? kv = null)
         {
             kv.IfNull(() => kv = new Dictionary<string, object>());
             data.If(d => d.Length > 0, (d) => d.Split('&').ForEach(keyValue => kv[keyValue.LeftOfChar('=')] = System.Uri.UnescapeDataString(keyValue.RightOfChar('='))));

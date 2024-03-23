@@ -56,10 +56,10 @@ namespace Bare.WebServer
     {
         public string WebsitePath { get; set; }
 
-        public const string POST = "post";
+        public const string? POST = "post";
         public const string GET = "get";
-        public const string PUT = "put";
-        public const string DELETE = "delete";
+        public const string? PUT = "put";
+        public const string? DELETE = "delete";
 
 
         protected Dictionary<string, ExtensionInfo> extFolderMap;
@@ -88,18 +88,18 @@ namespace Bare.WebServer
 
         public ResponsePacket Route(Session session, string verb, string path, Dictionary<string, object> kvParams)
         {
-            string ext = path.RightOfRightmostOf('.');
-            ExtensionInfo extInfo;
+            string? ext = path.RightOfRightmostOf('.');
+            ExtensionInfo? extInfo;
             ResponsePacket? ret = null;
             verb = verb.ToLower();
             path = path.ToLower();
 
             if (extFolderMap.TryGetValue(ext, out extInfo))
             {
-                string wpath = path.Substring(1).Replace('/', '\\');            // Strip off leading '/' and reformat as with windows path separator.
-                string fullPath = Path.Combine(WebsitePath, wpath);
+                string? wpath = path.Substring(1).Replace('/', '\\');            // Strip off leading '/' and reformat as with windows path separator.
+                string? fullPath = Path.Combine(WebsitePath, wpath);
 
-                Route routeHandler = routes.SingleOrDefault(r => verb == r.Verb.ToLower() && path == r.Path.ToLower());
+                Route? routeHandler = routes.SingleOrDefault(r => verb == r.Verb.ToLower() && path == r.Path.ToLower());
 
                 if (routeHandler != null)
                 {
@@ -156,7 +156,7 @@ namespace Bare.WebServer
         /// </summary>
         protected ResponsePacket ImageLoader(Route routeHandler, Session session, Dictionary<string, object> kvParams, string fullPath, string ext, ExtensionInfo extInfo)
         {
-            ResponsePacket ret;
+            ResponsePacket? ret;
 
             if (!File.Exists(fullPath))
             {
@@ -165,8 +165,8 @@ namespace Bare.WebServer
             }
             else
             {
-                FileStream fStream = new FileStream(fullPath, FileMode.Open, FileAccess.Read);
-                BinaryReader br = new BinaryReader(fStream);
+                FileStream? fStream = new FileStream(fullPath, FileMode.Open, FileAccess.Read);
+                BinaryReader? br = new BinaryReader(fStream);
                 ret = new ResponsePacket() { Data = br.ReadBytes((int)fStream.Length), ContentType = extInfo.ContentType };
                 br.Close();
                 fStream.Close();
@@ -180,7 +180,7 @@ namespace Bare.WebServer
 		/// </summary>
 		protected ResponsePacket PageLoader(Route routeHandler, Session session, Dictionary<string, object> kvParams, string fullPath, string ext, ExtensionInfo extInfo)
         {
-            ResponsePacket ret;
+            ResponsePacket? ret;
 
             if (fullPath == WebsitePath)        // If nothing follows the domain name or IP, then default to loading index.html.
             {
@@ -205,7 +205,7 @@ namespace Bare.WebServer
                 }
                 else
                 {
-                    string text = File.ReadAllText(fullPath);
+                    string? text = File.ReadAllText(fullPath);
 
                     // TODO: We put the route custom post process last because of how content is merged in the application's process,
                     // but this might cause problems if the route post processor adds something that the app's post processor needs to replace.
@@ -233,7 +233,7 @@ namespace Bare.WebServer
         /// </summary>
         protected ResponsePacket FileLoader(Route routeHandler, Session session, Dictionary<string, object> kvParams, string fullPath, string ext, ExtensionInfo extInfo)
         {
-            ResponsePacket ret;
+            ResponsePacket? ret;
 
             if (!File.Exists(fullPath))
             {
@@ -242,7 +242,7 @@ namespace Bare.WebServer
             }
             else
             {
-                string text = File.ReadAllText(fullPath);
+                string? text = File.ReadAllText(fullPath);
                 ret = new ResponsePacket() { Data = Encoding.UTF8.GetBytes(text), ContentType = extInfo.ContentType, Encoding = Encoding.UTF8 };
             }
 
